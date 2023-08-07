@@ -280,15 +280,12 @@ impl<A: Adapter> Socket<A> {
     ///         socket.emit("test", data);
     ///     });
     /// });
-    pub fn emit(
-        &self,
-        event: impl Into<String>,
-        data: impl Serialize,
-    ) -> Result<(), serde_json::Error> {
+    pub fn emit(&self, event: impl Into<String>, data: impl Serialize) -> Result<(), SendError> {
         let ns = self.ns.path.clone();
         let data = serde_json::to_value(data)?;
         if let Err(err) = self.send(Packet::event(ns, event.into(), data)) {
             debug!("sending error during emit message: {err:?}");
+            return Err(err);
         }
         Ok(())
     }
